@@ -26,14 +26,16 @@ init:
 - if "%arch%"=="Win64" ( set arch= Win64)
 - echo %arch%
 - echo %APPVEYOR_BUILD_WORKER_IMAGE%
-- if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2019" ( set generator="Visual Studio 16 2019" )
-- if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2017" ( set generator="Visual Studio 15 2017%arch%" )
-- if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2015" ( set generator="Visual Studio 14 2015%arch%" )
-- if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2013" ( set generator="Visual Studio 12 2013%arch%" )
+# Below is a weird way of using quotes (when setting generator), but doing it
+# other ways was _very_ problematic for CMake call in PowerShell below.
+- if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2019" ( set "generator=Visual Studio 16 2019" )
+- if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2017" ( set "generator=Visual Studio 15 2017%arch%" )
+- if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2015" ( set "generator=Visual Studio 14 2015%arch%" )
+- if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2013" ( set "generator=Visual Studio 12 2013%arch%" )
 - echo %generator%
 
 before_build:
-  #PowerShell
+#PowerShell
 - ps: |
     # Redirect Git's stderr to stdout. Git uses stderr instead of stdout for
     # output for many commands, but that leads to _red_ output in PowerShell.
@@ -42,16 +44,20 @@ before_build:
     $env:GIT_REDIRECT_STDERR = '2>&1'
     # Download LLVM 10 pre-build packages - courtesy of Zig Lang
     echo "--------> DOWNLOAD LLVM 10"
-    git clone https://github.com/llvm/llvm-project.git llvm-project
+    git clone --single-branch --branch release/10.x https://github.com/llvm/llvm-project.git
+    dir .
     cd llvm-project
+    dir .
     mkdir build
     cd build
     echo "--------> BUILD LLVM 10"
-    cmake ..\ -Thost=x64 -DLLVM_TARGETS_TO_BUILD=X86 -DLLVM_OPTIMIZED_TABLEGEN=On -DLLVM_EXPORT_SYMBOLS_FOR_PLUGINS=On -G %generator% -A x64
+    echo $env:generator
+    cmake ..\llvm\ -Thost=x64 -DLLVM_TARGETS_TO_BUILD=X86 -DLLVM_OPTIMIZED_TABLEGEN=On -DLLVM_EXPORT_SYMBOLS_FOR_PLUGINS=On -G "$env:generator" -A x64
     cmake --build . --config Release
+    dir .
+    dir Release
 
-    echo "--------> UNPACK LLVM 10"
-    # Command interpreter and batch files
+# Command interpreter and batch files
 - cmd: |
     REM CMake scripts print some messages (via 'message'). Although not errors,
     REM these go to stderr, which PowerShell treats as exceptions. For this
@@ -61,7 +67,7 @@ before_build:
     cd build
     echo %generator%
     echo "--------> RUN CMAKE"
-    cmake C:\projects\llvm-tutor -Thost=x64 -DLT_LLVM_INSTALL_DIR="C:\llvm-install\llvm\llvm+clang+lld-10.0.0-x86_64-windows-msvc-release-mt" -G %generator% -A x64
+    cmake C:\projects\llvm-tutor -Thost=x64 -DLT_LLVM_INSTALL_DIR="C:\llvm-project\\" -G %generator% -A x64
     cmake --build . --config Release
 
 build:
