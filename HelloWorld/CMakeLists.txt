@@ -30,7 +30,20 @@ endif()
 #===============================================================================
 # 3. ADD THE TARGET
 #===============================================================================
-add_library(HelloWorld SHARED HelloWorld.cpp)
+# add_library(HelloWorld SHARED HelloWorld.cpp)
+
+if(WIN32 OR CYGWIN)
+  set(LLVM_LINK_COMPONENTS Core Support)
+endif()
+
+add_llvm_library( LLVMHello MODULE BUILDTREE_ONLY
+  Hello.cpp
+
+  DEPENDS
+  intrinsics_gen
+  PLUGIN_TOOL
+  opt
+  )
 
 # Allow undefined symbols in shared objects on Darwin (this is the default
 # behaviour on Linux)
