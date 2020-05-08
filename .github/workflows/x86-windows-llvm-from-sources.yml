@@ -44,19 +44,28 @@ jobs:
           ls
           ls tools
           ninja clang opt lli not FileCheck
+          ls bin
+          ls cmake
+          ls cmake/modules/CMakeFiles
+          ls lib/cmake/llvm
+          ls ${env:GITHUB_WORKSPACE}/llvm-project/build
           # msbuild .\ALL_BUILD.vcxproj -p:Configuration=Release -maxcpucount
       - name: Install lit
         run: |
           pip install lit
       - name: Build HelloWorld
         run: |
+          # Adding the location of Ninja to $PATH
+          $env:Path += "$;GITHUB_WORKSPACE"
           cd HelloWorld
           mkdir build && cd build
-          cmake -DLT_LLVM_INSTALL_DIR="$GITHUB_WORKSPACE/llvm-project/build" -DLT_OPT_PIPELINE_REG=On ../
-          make -j2
+          cmake -G Ninja -DLT_LLVM_INSTALL_DIR="${env:GITHUB_WORKSPACE}/llvm-project/build" ../
+          ninja HelloWorld
       - name: Build llvm-tutor + run tests
         run: |
+          # Adding the location of Ninja to $PATH
+          $env:Path += "$;GITHUB_WORKSPACE"
           mkdir build && cd build
-          cmake -DLT_LLVM_INSTALL_DIR="$GITHUB_WORKSPACE/llvm-project/build" -DLT_OPT_PIPELINE_REG=On ../
-          make -j2
+          cmake G Ninja -DLT_LLVM_INSTALL_DIR="${env:GITHUB_WORKSPACE}/llvm-project/build" ../
+          ninja
           lit test/
