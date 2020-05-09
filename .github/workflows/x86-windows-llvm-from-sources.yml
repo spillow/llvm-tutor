@@ -61,11 +61,12 @@ jobs:
           mkdir build && cd build
           cmake -G Ninja -DLT_LLVM_INSTALL_DIR="${env:GITHUB_WORKSPACE}/llvm-project/build" ../
           ninja HelloWorld
+          # "${env:GITHUB_WORKSPACE}/llvm-project/build/bin/opt" -load lib/libHelloWorld.dll --legacy-hello-world -disable-output ../test/hello.ll
       - name: Build llvm-tutor + run tests
         run: |
           # Adding the location of Ninja to $PATH
-          $env:Path += "$;GITHUB_WORKSPACE"
-          mkdir build && cd build
-          cmake G Ninja -DLT_LLVM_INSTALL_DIR="${env:GITHUB_WORKSPACE}/llvm-project/build" ../
-          ninja
-          lit test/
+          # $env:Path += "$;GITHUB_WORKSPACE"
+          # mkdir build && cd build
+          # cmake G Ninja -DLT_LLVM_INSTALL_DIR="${env:GITHUB_WORKSPACE}/llvm-project/build" ../
+          # ninja
+          # lit test/
