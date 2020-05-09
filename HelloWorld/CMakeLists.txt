@@ -45,3 +45,9 @@ add_llvm_library( HelloWorld MODULE BUILDTREE_ONLY
   PLUGIN_TOOL
   opt
   )
+
+# Allow undefined symbols in shared objects on Darwin (this is the default
+# behaviour on Linux)
+# add_llvm_library most likely adds PRIVATE, so need to be consistent here
+target_link_libraries(HelloWorld PRIVATE
+  "$<$<PLATFORM_ID:Darwin>:-undefined dynamic_lookup>")
