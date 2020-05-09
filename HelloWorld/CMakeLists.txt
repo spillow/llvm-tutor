@@ -31,21 +31,17 @@ endif()
 # 3. ADD THE TARGET
 #===============================================================================
 # add_library(HelloWorld SHARED HelloWorld.cpp)
-
+list(APPEND CMAKE_MODULE_PATH "${LLVM_CMAKE_DIR}")
+include(AddLLVM)
 if(WIN32 OR CYGWIN)
   set(LLVM_LINK_COMPONENTS Core Support)
 endif()
 
-add_llvm_library( LLVMHello MODULE BUILDTREE_ONLY
-  Hello.cpp
+add_llvm_library( HelloWorld MODULE BUILDTREE_ONLY
+  HelloWorld.cpp
 
   DEPENDS
   intrinsics_gen
   PLUGIN_TOOL
   opt
   )
-
-# Allow undefined symbols in shared objects on Darwin (this is the default
-# behaviour on Linux)
-target_link_libraries(HelloWorld
-  "$<$<PLATFORM_ID:Darwin>:-undefined dynamic_lookup>")
