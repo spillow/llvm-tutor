@@ -34,8 +34,8 @@ jobs:
           cd llvm-project
           mkdir build
           cd build
-          # cmake -G "Visual Studio 16 2019" -Thost=x64 `
-          cmake -G Ninja `
+          # cmake -G Ninja `
+          cmake -G "Visual Studio 16 2019" -Thost=x64 `
             -DLLVM_ENABLE_PROJECTS="clang" -DLLVM_EXPORT_SYMBOLS_FOR_PLUGINS=On `
             -DLLVM_TARGETS_TO_BUILD="X86" -DLLVM_OPTIMIZED_TABLEGEN=ON `
             -DCMAKE_BUILD_TYPE=MinSizeRel `
@@ -43,13 +43,13 @@ jobs:
           # Note that only the required tools are built
           ls
           ls tools
-          ninja clang opt lli not FileCheck
+          # ninja clang opt lli not FileCheck
+          msbuild .\ALL_BUILD.vcxproj -p:Configuration=Release -maxcpucount
           ls bin
           ls cmake
           ls cmake/modules/CMakeFiles
           ls lib/cmake/llvm
           ls ${env:GITHUB_WORKSPACE}/llvm-project/build
-          # msbuild .\ALL_BUILD.vcxproj -p:Configuration=Release -maxcpucount
       - name: Install lit
         run: |
           pip install lit
@@ -61,7 +61,7 @@ jobs:
           mkdir build && cd build
           cmake -G Ninja -DLT_LLVM_INSTALL_DIR="${env:GITHUB_WORKSPACE}/llvm-project/build" ../
           ninja HelloWorld
-          ls ${env:GITHUB_WORKSPACE}/llvm-project/build/bin
+          ls ${env:GITHUB_WORKSPACE}/llvm-project/build/Release/bin/
           D:\a\llvm-tutor\llvm-tutor\llvm-project\build\bin\opt.exe --help
           # opt.exe -load lib\libHelloWorld.dll --legacy-hello-world -disable-output ..\test\hello.ll
       - name: Build llvm-tutor + run tests
